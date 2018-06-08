@@ -1,0 +1,14 @@
+name: ${name}
+version: ${version}
+description: ${description}
+author: ${author}
+website: ${url}
+
+main: ${mainClass}
+
+commands:
+    whence:
+        description: Gives the direction to and current distance from the current waypoint.
+        usage: /whence
+
+permissions:
