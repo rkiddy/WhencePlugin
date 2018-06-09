@@ -17,6 +17,8 @@ public class WhenceWaypoint {
 
     private String name;
     private String player;
+    private String world;
+
     private boolean active;
 
     public int getX() {
@@ -52,6 +54,13 @@ public class WhenceWaypoint {
     }
     public void setPlayer(String player) {
         this.player = player;
+    }
+
+    public String getWorld() {
+        return world;
+    }
+    public void setWorld(String world) {
+        this.world = world;
     }
 
     public boolean isActive() {

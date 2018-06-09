@@ -1,5 +1,8 @@
 package org.ganymede.minecraft.whence;
 
+import java.util.Arrays;
+
+import org.apache.commons.lang.StringUtils;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -31,9 +34,46 @@ public class WhenceCommand implements CommandExecutor {
         int y = location.getBlockY();
         int z = location.getBlockZ();
 
-        WhenceWaypoint w = plugin.activeWaypoint(player.getName());
+        sender.sendMessage("whence args: " +StringUtils.join(args, ' '));
 
-        sender.sendMessage("whence: [" + x + "," + y + "," + z + "] to [" + w.getX() + "," + w.getY() + "," + w.getZ() + "]");
+        if (args.length == 0) {
+
+            WhenceWaypoint w = plugin.storage.getActiveWaypoint(player.getName(), player.getWorld().getName());
+
+            if (w == null) {
+                sender.sendMessage("whence: [" + x + "," + y + "," + z + "] to [NOT FOUND]");
+            } else {
+                sender.sendMessage("whence: [" + x + "," + y + "," + z + "] to [" + w.getX() + "," + w.getY() + "," + w.getZ() + "]");
+            }
+        }
+
+        if (args.length > 0 && args[0].equals("new")) {
+
+            if (args.length == 1) {
+                sender.sendMessage("whence: \"new\" command needs a name after.");
+                sender.sendMessage("whence: The name may contains spaces.");
+            } else {
+
+                WhenceWaypoint w = new WhenceWaypoint();
+
+                w.setPlayer(player.getName());
+                w.setWorld(player.getWorld().getName());
+
+                Location loc = player.getLocation();
+
+                w.setX(loc.getBlockX());
+                w.setY(loc.getBlockY());
+                w.setZ(loc.getBlockZ());
+
+                w.setActive(false);
+
+                String name = StringUtils.join(Arrays.copyOfRange(args, 1, args.length), ' ');
+
+                w.setName(name);
+
+                plugin.storage.createWaypoint(w);
+            }
+        }
 
         return true;
     }
