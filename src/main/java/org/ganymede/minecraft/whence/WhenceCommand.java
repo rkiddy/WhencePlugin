@@ -1,6 +1,6 @@
 package org.ganymede.minecraft.whence;
 
-import org.bukkit.World;
+import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -24,11 +24,17 @@ public class WhenceCommand implements CommandExecutor {
         }
 
         Player player = (Player)sender;
-        
-        World world = player.getWorld();
 
-        sender.sendMessage("Successfully used whence command! in world: " + world);
-        
+        Location location = player.getLocation();
+
+        int x = location.getBlockX();
+        int y = location.getBlockY();
+        int z = location.getBlockZ();
+
+        WhenceWaypoint w = plugin.activeWaypoint(player.getName());
+
+        sender.sendMessage("whence: [" + x + "," + y + "," + z + "] to [" + w.getX() + "," + w.getY() + "," + w.getZ() + "]");
+
         return true;
     }
 }
