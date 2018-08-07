@@ -24,6 +24,9 @@ public class WhenceWaypoint {
     public int getX() {
         return x;
     }
+    public double getDoubleX() {
+        return new Integer(x).doubleValue();
+    }
     public void setX(int x) {
         this.x = x;
     }
@@ -31,12 +34,18 @@ public class WhenceWaypoint {
     public int getY() {
         return y;
     }
+    public double getDoubleY() {
+        return new Integer(y).doubleValue();
+    }
     public void setY(int y) {
         this.y = y;
     }
 
     public int getZ() {
         return z;
+    }
+    public double getDoubleZ() {
+        return new Integer(z).doubleValue();
     }
     public void setZ(int z) {
         this.z = z;

@@ -1,5 +1,6 @@
 package org.ganymede.minecraft.whence;
 
+import java.io.FileInputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -8,9 +9,12 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 import java.util.logging.Logger;
 
 import org.apache.commons.lang.StringUtils;
+import org.bukkit.World;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
 public class WhenceStorage {
@@ -29,9 +33,24 @@ public class WhenceStorage {
 
     private Logger log;
 
+    public World world;
+
+    public Player player;
+
     public WhenceStorage(Plugin plugin) {
         this.plugin = plugin;
         this.log = this.plugin.getLogger();
+    }
+
+    Properties configFile;
+
+    public String getProperty(String key) {
+        return this.configFile.getProperty(key);
+    }
+
+    public void setPlayer(Player player) {
+        this.player = player;
+        this.world = player.getWorld();
     }
 
     /*
@@ -59,12 +78,25 @@ public class WhenceStorage {
      */
 
     final private String username = "ray";
-    final private String password = "alexna11";
     final private String url = "jdbc:mysql://localhost:3306/minecrafts?autoReconnect=true&useSSL=false";
+
+    private String password;
 
     static private Connection connection;
 
     public void setup() {
+ 
+        configFile = new java.util.Properties();
+
+        String cFile = System.getProperty("user.home") + "/.minecraft.txt";
+
+        try {
+            configFile.load(new FileInputStream(cFile));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        password = getProperty("DB_PWD");
 
         try {
             Class.forName("com.mysql.jdbc.Driver");
@@ -91,15 +123,15 @@ public class WhenceStorage {
         }
     }
 
-    public WhenceWaypoint getActiveWaypoint(String playerName, String worldName) {
+    public WhenceWaypoint getActiveWaypoint() {
 
         try {
 
             String sql = "select * from " + T_WAYPOINTS +
                     " where " +
-                    COL_PLAYER + " = '" + playerName + "' and " +
+                    COL_PLAYER + " = '" + player.getName() + "' and " +
                     COL_ACTIVE + " = 1 and " +
-                    COL_WORLD + " = '" + worldName + "'";
+                    COL_WORLD + " = '" + world.getName() + "'";
 
             log.info(sql);
 
@@ -125,6 +157,40 @@ public class WhenceStorage {
         } catch (Exception e) {
             return null;
         }
+    }
+
+    public boolean setActiveWaypoint(String name) {
+
+        // Why is name coming out in the SQL and 'name', so I get ''name''?
+        //
+        name = name.replaceAll("\\'", "");
+
+        String sql1 = "update " + T_WAYPOINTS +
+                " set " + COL_ACTIVE + " = 0" +
+                " where " + COL_PLAYER + " = '" + player.getName() + "'";
+
+        log.info(sql1);
+
+        String sql2 = "update " + T_WAYPOINTS +
+                " set " + COL_ACTIVE + " = 1" +
+                " where " + COL_PLAYER + " = '" + player.getName() + "'" +
+                " and " + COL_NAME + " = '" + name + "'";
+
+        log.info(sql2);
+
+        try {
+
+            Statement stmt = connection.createStatement();
+
+            stmt.executeUpdate(sql1);
+
+            stmt.executeUpdate(sql2);
+
+        } catch (Exception e) {
+            log.severe(e.getMessage());
+        }
+
+        return true;
     }
 
     public void createWaypoint(WhenceWaypoint w) {
@@ -171,14 +237,14 @@ public class WhenceStorage {
         }
     }
 
-    public List<String> getWaypointNames(String playerName, String worldName) {
+    public List<String> getWaypointNames() {
 
         try {
 
             String sql = "select * from " + T_WAYPOINTS +
                     " where " +
-                    COL_PLAYER + " = '" + playerName + "' and " +
-                    COL_WORLD + " = '" + worldName + "'";
+                    COL_PLAYER + " = '" + player.getName() + "' and " +
+                    COL_WORLD + " = '" + world.getName() + "'";
 
             log.info(sql);
 
@@ -196,6 +262,28 @@ public class WhenceStorage {
 
         } catch (Exception e) {
             return new ArrayList<String>();
+        }
+    }
+
+    public boolean removeWaypoint(String name) {
+
+        String sql = "delete from " + T_WAYPOINTS +
+                " where " +
+                COL_NAME + " = '" + name + "'";
+
+        log.info(sql);
+
+        try {
+
+            Statement stmt = connection.createStatement();
+
+            stmt.executeUpdate(sql);
+
+            return true;
+
+        } catch (Exception e) {
+            log.severe(e.getMessage());
+            return false;
         }
     }
 }
