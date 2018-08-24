@@ -14,6 +14,14 @@ public class WhenceCommand implements CommandExecutor {
 
     WhencePlugin plugin;
 
+    void dprint(String msg) {
+        if ("TRUE".equalsIgnoreCase(this.plugin.debug)) {
+            System.out.println("DEBUG: " + msg);
+        } else {
+            System.out.println("DEBUG is false");
+        }
+    }
+
     public WhenceCommand(WhencePlugin plugin) {
         this.plugin = plugin;
     }
@@ -31,7 +39,8 @@ public class WhenceCommand implements CommandExecutor {
             sender.sendMessage("/whence - give location and distance to current waypoint.");
             sender.sendMessage("/whence list - list the existing waypoints by name.");
             sender.sendMessage("/whence new a b c - create waypoint with name \"a b c\" and set current.");
-            sender.sendMessage("/whence set a b c - set existing waypoint with name \"a b c\" to cs.comurrent.");
+            sender.sendMessage("/whence set a b c - set existing waypoint with name \"a b c\" to current.");
+            sender.sendMessage("/whence delete a b c - delete waypoint with name \"a b c\".");
         }
 
         Player player = (Player)sender;
@@ -45,31 +54,39 @@ public class WhenceCommand implements CommandExecutor {
 
         if (args.length > 0 && args[0].equals("set")) {
 
+            dprint("command: set");
+
             String name = StringUtils.join(Arrays.copyOfRange(args, 1, args.length), ' ');
 
             boolean updated = plugin.storage.setActiveWaypoint(name);
 
             if ( ! updated) {
-
                 sender.sendMessage("whence: ERROR setting waypoint. None set.");
             }
 
             WhenceWaypoint w = plugin.storage.getActiveWaypoint();
 
             if (w == null) {
+
                 sender.sendMessage("whence: no active waypoint.");
+
             } else {
                 sender.sendMessage(this.activeWaypointMessage(player));
+
                 player.setCompassTarget(new Location(player.getWorld(), w.getDoubleX(), w.getDoubleY(), w.getDoubleZ()));
             }
         }
 
         if (args.length > 0 && args[0].equals("list")) {
 
+            dprint("command: list");
+
             sender.sendMessage("whence: " + this.getWaypointNames());
         }
 
         if (args.length > 0 && args[0].equals("new")) {
+
+            dprint("command: new");
 
             if (args.length == 1) {
                 sender.sendMessage("whence: \"new\" command needs a name after.");
@@ -83,6 +100,8 @@ public class WhenceCommand implements CommandExecutor {
 
                 Location loc = player.getLocation();
 
+                dprint("where? " + loc);
+
                 w.setX(loc.getBlockX());
                 w.setY(loc.getBlockY());
                 w.setZ(loc.getBlockZ());
@@ -94,6 +113,8 @@ public class WhenceCommand implements CommandExecutor {
                 String name = StringUtils.join(Arrays.copyOfRange(args, 1, args.length), ' ');
 
                 w.setName(name);
+
+                dprint(w.toString());
 
                 plugin.storage.createWaypoint(w);
 
@@ -120,7 +141,18 @@ public class WhenceCommand implements CommandExecutor {
 
         if (args.length > 0 && args[0].equals("delete")) {
 
+            dprint("command: delete");
+
             String name = StringUtils.join(Arrays.copyOfRange(args, 1, args.length), ' ');
+
+            WhenceWaypoint w = plugin.storage.getActiveWaypoint();
+
+            if (w.getName().equals(name)) {
+
+                plugin.storage.setActiveWaypoint(null);
+
+                player.setCompassTarget(new Location(player.getWorld(), 0d, 0d, 0d));
+            }
 
             boolean deleted = plugin.storage.removeWaypoint(name);
 
@@ -149,14 +181,18 @@ public class WhenceCommand implements CommandExecutor {
 
         WhenceWaypoint w = plugin.storage.getActiveWaypoint();
 
-        Location location = player.getLocation();
+        dprint("active: " + w);
 
-        int x = location.getBlockX();
-        int z = location.getBlockZ();
+        if (w.getName() == null || "null".equals(w.getName())) {
 
-        if (w == null) {
-            return "whence: no active waypoint.";
+            return "whence: NO waypoint is active.";
+
         } else {
+
+            Location location = player.getLocation();
+
+            int x = location.getBlockX();
+            int z = location.getBlockZ();
 
             int distance = ((Double)(Math.sqrt(Math.pow((x-w.getX()), 2) + Math.pow((z-w.getZ()), 2)))).intValue();
 
@@ -164,7 +200,7 @@ public class WhenceCommand implements CommandExecutor {
 
             String zDir = (z < w.getZ()) ? "South" : "North";
 
-            return "whence: distance " + distance + " blocks, " + zDir + "-" + xDir + " to [" + w.getX() + "," + w.getZ() + "," + w.getZ() + "]";
+            return "whence: " + distance + " blocks, " + zDir + "-" + xDir + " to [" + w.getX() + "," + w.getY() + "," + w.getZ() + "]: '" + w.getName() + "'";
         }
     }
 }

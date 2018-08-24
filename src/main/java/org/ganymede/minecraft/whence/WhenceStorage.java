@@ -85,7 +85,7 @@ public class WhenceStorage {
     static private Connection connection;
 
     public void setup() {
- 
+
         configFile = new java.util.Properties();
 
         String cFile = System.getProperty("user.home") + "/.minecraft.txt";
@@ -161,22 +161,27 @@ public class WhenceStorage {
 
     public boolean setActiveWaypoint(String name) {
 
-        // Why is name coming out in the SQL and 'name', so I get ''name''?
-        //
-        name = name.replaceAll("\\'", "");
-
         String sql1 = "update " + T_WAYPOINTS +
                 " set " + COL_ACTIVE + " = 0" +
                 " where " + COL_PLAYER + " = '" + player.getName() + "'";
 
         log.info(sql1);
 
-        String sql2 = "update " + T_WAYPOINTS +
-                " set " + COL_ACTIVE + " = 1" +
-                " where " + COL_PLAYER + " = '" + player.getName() + "'" +
-                " and " + COL_NAME + " = '" + name + "'";
+        String sql2 = null;
 
-        log.info(sql2);
+        if (name != null) {
+
+            // Why is name coming out in the SQL and 'name', so I get ''name''?
+            //
+            name = name.replaceAll("\\'", "");
+
+            sql2 = "update " + T_WAYPOINTS +
+                    " set " + COL_ACTIVE + " = 1" +
+                    " where " + COL_PLAYER + " = '" + player.getName() + "'" +
+                    " and " + COL_NAME + " = '" + name + "'";
+
+            log.info(sql2);
+        }
 
         try {
 
@@ -184,7 +189,9 @@ public class WhenceStorage {
 
             stmt.executeUpdate(sql1);
 
-            stmt.executeUpdate(sql2);
+            if (sql2 != null) {
+                stmt.executeUpdate(sql2);
+            }
 
         } catch (Exception e) {
             log.severe(e.getMessage());

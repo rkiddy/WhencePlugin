@@ -78,4 +78,8 @@ public class WhenceWaypoint {
     public void setActive(boolean active) {
         this.active = active;
     }
+
+    public String toString() {
+        return "WhenceWaypoint: (x:" + this.x + ", y:" + this.y + ", z:" + this.z + "), name: '" + this.name + "'";
+    }
 }
