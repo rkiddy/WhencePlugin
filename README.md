@@ -21,12 +21,12 @@ pk | x | y | z | name | player | active | world
 
 The commands offered by this plugin are:
 
-> /whence - give location and distance to current waypoint.
-> /whence help - this list fo commands.
-> /whence list - list the existing waypoints by name.
-> /whence new a b c - create waypoint with name \"a b c\" and set current.
-> /whence set a b c - set existing waypoint with name \"a b c\" to current.
-> /whence delete a b c - delete waypoint with name \"a b c\".
+* /whence - give location and distance to current waypoint.
+* /whence help - this list fo commands.
+* /whence list - list the existing waypoints by name.
+* /whence new a b c - create waypoint with name \"a b c\" and set current.
+* /whence set a b c - set existing waypoint with name \"a b c\" to current.
+* /whence delete a b c - delete waypoint with name \"a b c\".
 
 And that is all. Thank you for your support.
 
