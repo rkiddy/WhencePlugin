@@ -37,6 +37,7 @@ public class WhenceCommand implements CommandExecutor {
 
         if (args.length > 0 && args[0].equals("help")) {
             sender.sendMessage("/whence - give location and distance to current waypoint.");
+            sender.sendMessage("/whence help - this list fo commands.");
             sender.sendMessage("/whence list - list the existing waypoints by name.");
             sender.sendMessage("/whence new a b c - create waypoint with name \"a b c\" and set current.");
             sender.sendMessage("/whence set a b c - set existing waypoint with name \"a b c\" to current.");
