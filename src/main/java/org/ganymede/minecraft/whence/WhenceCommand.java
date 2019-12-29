@@ -35,18 +35,19 @@ public class WhenceCommand implements CommandExecutor {
             return false;
         }
 
+        Player player = (Player)sender;
+
+        plugin.storage.setPlayer(player);
+
         if (args.length > 0 && args[0].equals("help")) {
             sender.sendMessage("/whence - give location and distance to current waypoint.");
-            sender.sendMessage("/whence help - this list fo commands.");
+            sender.sendMessage("/whence help - this list of commands.");
             sender.sendMessage("/whence list - list the existing waypoints by name.");
             sender.sendMessage("/whence new a b c - create waypoint with name \"a b c\" and set current.");
             sender.sendMessage("/whence set a b c - set existing waypoint with name \"a b c\" to current.");
             sender.sendMessage("/whence delete a b c - delete waypoint with name \"a b c\".");
+            sender.sendMessage("/whence to x y a b c - create waypoint with name \"a b c\" at location (x, 62, y).");
         }
-
-        Player player = (Player)sender;
-
-        plugin.storage.setPlayer(player);
 
         if (args.length == 0) {
 
@@ -161,6 +162,64 @@ public class WhenceCommand implements CommandExecutor {
                 sender.sendMessage("whence: deleted waypoint '" + name + "'");
             } else {
                 sender.sendMessage("whence: ERROR deleting waypoint '" + name + "'");
+            }
+        }
+
+        if (args.length > 0 && args[0].equals("to")) {
+
+            dprint("command: to");
+
+            if (args.length < 4) {
+                sender.sendMessage("whence: \"to\" command needs a x, a y, and name after.");
+                sender.sendMessage("whence: The name may contains spaces.");
+            } else {
+
+                int xLoc = Integer.valueOf(args[1]);
+                int zLoc = Integer.valueOf(args[2]);
+
+                WhenceWaypoint w = new WhenceWaypoint();
+
+                w.setPlayer(player.getName());
+                w.setWorld(player.getWorld().getName());
+
+                Location loc = player.getLocation();
+
+                dprint("where? " + loc);
+
+                w.setX(xLoc);
+                w.setY(62);
+                w.setZ(zLoc);
+
+                w.setActive(false);
+
+                // the command "/whence new a b c" gives name "a b c".
+                //
+                String name = StringUtils.join(Arrays.copyOfRange(args, 3, args.length), ' ');
+
+                w.setName(name);
+
+                dprint(w.toString());
+
+                plugin.storage.createWaypoint(w);
+
+                boolean updated = plugin.storage.setActiveWaypoint(name);
+
+                if ( ! updated) {
+
+                    sender.sendMessage("whence: ERROR setting waypoint. None set.");
+
+                } else {
+
+                    w = plugin.storage.getActiveWaypoint();
+
+                    if (w == null) {
+                        sender.sendMessage("whence: no active waypoint.");
+                    } else {
+                        sender.sendMessage(this.activeWaypointMessage(player));
+                    }
+
+                    player.setCompassTarget(new Location(player.getWorld(), w.getDoubleX(), w.getDoubleY(), w.getDoubleZ()));
+                }
             }
         }
 

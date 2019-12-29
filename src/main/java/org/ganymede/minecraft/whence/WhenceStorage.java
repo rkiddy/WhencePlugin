@@ -35,6 +35,8 @@ public class WhenceStorage {
 
     public World world;
 
+    public String worldUID;
+
     public Player player;
 
     public WhenceStorage(Plugin plugin) {
@@ -51,6 +53,7 @@ public class WhenceStorage {
     public void setPlayer(Player player) {
         this.player = player;
         this.world = player.getWorld();
+        this.worldUID = this.world.getUID().toString();
     }
 
     /*
@@ -131,7 +134,7 @@ public class WhenceStorage {
                     " where " +
                     COL_PLAYER + " = '" + player.getName() + "' and " +
                     COL_ACTIVE + " = 1 and " +
-                    COL_WORLD + " = '" + world.getName() + "'";
+                    COL_WORLD + " = '" + worldUID + "'";
 
             log.info(sql);
 
@@ -215,7 +218,7 @@ public class WhenceStorage {
         values.add(String.valueOf(w.getZ()));
 
         columns.add(COL_WORLD);
-        values.add("'" + w.getWorld() + "'");
+        values.add("'" + worldUID + "'");
 
         columns.add(COL_PLAYER);
         values.add("'" + w.getPlayer() + "'");
@@ -251,7 +254,7 @@ public class WhenceStorage {
             String sql = "select * from " + T_WAYPOINTS +
                     " where " +
                     COL_PLAYER + " = '" + player.getName() + "' and " +
-                    COL_WORLD + " = '" + world.getName() + "'";
+                    COL_WORLD + " = '" + worldUID + "'";
 
             log.info(sql);
 
