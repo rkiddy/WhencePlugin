@@ -1,7 +1,10 @@
 package org.ganymede.minecraft.whence;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Location;
@@ -118,7 +121,7 @@ public class WhenceCommand implements CommandExecutor {
 
                 dprint(w.toString());
 
-                plugin.storage.createWaypoint(w);
+                plugin.storage.saveWaypoint(w);
 
                 boolean updated = plugin.storage.setActiveWaypoint(name);
 
@@ -200,7 +203,7 @@ public class WhenceCommand implements CommandExecutor {
 
                 dprint(w.toString());
 
-                plugin.storage.createWaypoint(w);
+                plugin.storage.saveWaypoint(w);
 
                 boolean updated = plugin.storage.setActiveWaypoint(name);
 
@@ -228,13 +231,23 @@ public class WhenceCommand implements CommandExecutor {
 
     private List<String> getWaypointNames() {
 
-        List<String> waypoints = plugin.storage.getWaypointNames();
+        Map<Integer,List<String>> waypoints = plugin.storage.listWaypoints();
 
-        for (int idx = 0; idx < waypoints.size(); idx++) {
-            waypoints.set(idx, "'" + waypoints.get(idx) + "'");
+        List<String> nextWays = new ArrayList<>();
+
+        List<Integer> distances = new ArrayList<Integer>(waypoints.keySet());
+
+        Collections.sort(distances);
+
+        for (Integer distance : distances) {
+
+            for (String name : waypoints.get(distance)) {
+
+                nextWays.add("\"" + name + "\" (" + distance + ")");
+            }
         }
 
-        return waypoints;
+        return nextWays;
     }
 
     public String activeWaypointMessage(Player player) {

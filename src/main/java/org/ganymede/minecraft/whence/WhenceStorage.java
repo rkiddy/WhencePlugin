@@ -8,14 +8,16 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Logger;
 
 import org.apache.commons.lang.StringUtils;
+import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.Plugin;
 
 public class WhenceStorage {
 
@@ -29,7 +31,7 @@ public class WhenceStorage {
     private static final String COL_NAME = "name";
     private static final String COL_ACTIVE = "active";
 
-    private Plugin plugin;
+    private WhencePlugin plugin;
 
     private Logger log;
 
@@ -39,7 +41,7 @@ public class WhenceStorage {
 
     public Player player;
 
-    public WhenceStorage(Plugin plugin) {
+    public WhenceStorage(WhencePlugin plugin) {
         this.plugin = plugin;
         this.log = this.plugin.getLogger();
     }
@@ -203,7 +205,7 @@ public class WhenceStorage {
         return true;
     }
 
-    public void createWaypoint(WhenceWaypoint w) {
+    public void saveWaypoint(WhenceWaypoint w) {
 
         List<String> columns = new ArrayList<>();
         List<String> values = new ArrayList<>();
@@ -247,7 +249,52 @@ public class WhenceStorage {
         }
     }
 
-    public List<String> getWaypointNames() {
+    public WhenceWaypoint createWaypointAtLocation(int x, int z) {
+        return createWaypointAtLocation(x, 62, z);
+    }
+
+    public WhenceWaypoint createWaypointAtLocation(int x, int y, int z) {
+
+        WhenceWaypoint w = new WhenceWaypoint();
+
+        w.setPlayer(player.getName());
+
+        plugin.dprint("where? at (" + x + ", " + y + ", " + z + ")");
+
+        w.setX(new Double(x).intValue());
+        w.setY(new Double(y).intValue());
+        w.setZ(new Double(z).intValue());
+
+        w.setActive(false);
+
+        return w;
+    }
+
+    public WhenceWaypoint createWaypointAtPlayerLocation() {
+
+        WhenceWaypoint w = new WhenceWaypoint();
+
+        w.setPlayer(player.getName());
+
+        Location loc = player.getLocation();
+
+        plugin.dprint("where? " + loc);
+
+        w.setX(new Double(loc.getX()).intValue());
+        w.setY(new Double(loc.getY()).intValue());
+        w.setZ(new Double(loc.getZ()).intValue());
+
+        w.setActive(false);
+
+        return w;
+    }
+
+    public Map<Integer,List<String>> listWaypoints() {
+
+        Location loc = player.getLocation();
+
+        int x1 = (int)loc.getX();
+        int z1 = (int)loc.getZ();
 
         try {
 
@@ -262,16 +309,49 @@ public class WhenceStorage {
 
             ResultSet rs = stmt.executeQuery();
 
-            List<String> found = new ArrayList<>();
+            Map<Integer,List<String>> found = new HashMap<>();
 
             while (rs.next()) {
-                found.add(rs.getString(COL_NAME));
+
+                String name = rs.getString(COL_NAME);
+
+                int x2 = (int)rs.getDouble(COL_X);
+                int z2 = (int)rs.getDouble(COL_Z);
+
+                int xdiff = 0;
+
+                if (x1 > 0 && x2 > 0) {
+                    xdiff = Math.abs(x1 - x2);
+                } else if (x1 < 0 && x2 < 0) {
+                    xdiff = Math.abs(Math.abs(x1) - Math.abs(x2));
+                } else {
+                    xdiff = Math.abs(x1) + Math.abs(x2);
+                }
+
+                int zdiff = 0;
+
+                if (z1 > 0 && z2 > 0) {
+                    zdiff = Math.abs(z1 - z2);
+                } else if (z1 < 0 && z2 < 0) {
+                    zdiff = Math.abs(Math.abs(z1) - Math.abs(z2));
+                } else {
+                    zdiff = Math.abs(z1) + Math.abs(z2);
+                }
+
+                int distance = (int)Math.sqrt((xdiff * xdiff) + (zdiff * zdiff));
+
+                List<String> names = found.get(distance);
+
+                if (names == null) {
+                    found.put(distance, new ArrayList<String>());
+                }
+                found.get(distance).add(name);
             }
 
             return found;
 
         } catch (Exception e) {
-            return new ArrayList<String>();
+            return new HashMap<Integer,List<String>>();
         }
     }
 
@@ -295,5 +375,18 @@ public class WhenceStorage {
             log.severe(e.getMessage());
             return false;
         }
+    }
+
+    public boolean savePlayerDeathLocation() {
+
+        log.info("Saving player death location.");
+
+        WhenceWaypoint w = createWaypointAtPlayerLocation();
+
+        w.setName("Death @ " + System.currentTimeMillis());
+
+        saveWaypoint(w);
+
+        return true;
     }
 }

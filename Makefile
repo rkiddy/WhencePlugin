@@ -4,11 +4,11 @@ build:
 
 install:
 	mvn install
-	cp -v target/WhencePlugin-0.2-SNAPSHOT.jar /Users/ray/Projects/minecraftServ/work/plugins/
+	cp -v target/WhencePlugin-0.3-SNAPSHOT.jar /Users/ray/Projects/minecraftServ/work/plugins/
 
-remote: install copy
+remote: build install copy
 
 copy:
-	scp target/WhencePlugin-0.2-SNAPSHOT.jar minecraft@opencalaccess.org:/home/minecraft/plugins/
+	scp target/WhencePlugin-0.3-SNAPSHOT.jar minecraft@opencalaccess.org:/home/minecraft/plugins/
 
 

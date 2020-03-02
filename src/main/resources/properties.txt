@@ -1,5 +1,5 @@
 
 DB_USER=ray
 DB_URL=jdbc:mysql://localhost:3306/minecrafts?autoReconnect=true&useSSL=false
-DB_PWD=izazeekret
+DB_PWD=alexna11
 

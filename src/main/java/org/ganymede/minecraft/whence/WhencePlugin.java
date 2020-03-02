@@ -29,6 +29,14 @@ public class WhencePlugin extends JavaPlugin {
 
     public String debug;
 
+    public void dprint(String msg) {
+        if ("TRUE".equalsIgnoreCase(debug)) {
+            System.out.println("DEBUG: " + msg);
+        } else {
+            System.out.println("DEBUG is false");
+        }
+    }
+
     public void setup() {
 
         configFile = new java.util.Properties();
